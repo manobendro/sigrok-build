@@ -17,9 +17,9 @@ jobs:
       (endsWith(github.repository, 'sigrok-build'))) &&
       (github.event_name != 'workflow_dispatch' || github.event.inputs.build_pulseview_macos_arm == true)
     runs-on: macos-15
-    outputs:
-      pr_links: ${{ jobs.build_pulseview_macos_arm_steps.outputs.pr_links }}
     steps:
       - name: PulseView macOS ARM Build Steps
         id: build_pulseview_macos_arm_steps
         uses: ./.github/workflows/build_pulseview_macos_arm.yml
+    outputs:
+      pr_links: ${{ steps.build_pulseview_macos_arm_steps.outputs.pr_links }}
