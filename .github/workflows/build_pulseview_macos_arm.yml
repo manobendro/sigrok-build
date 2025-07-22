@@ -1,34 +1,25 @@
-name: PulseView macOS build for ARM
+name: PulseView macOS build for ARM - Steps
 
 on:
   workflow_call:
-  workflow_dispatch: # Add this trigger
+    inputs:
+      artifact_version:
+        required: false
+        type: string
+        default: "NIGHTLY"
 
-if: |
-  ((endsWith(github.repository, 'pulseview')) ||
-  (endsWith(github.repository, 'sigrok-build')))
-
-# See https://github.com/actions/runner-images/issues/9254
-runs-on: macos-15
-
-# Note: For now, we only supply debug builds
-#    strategy:
-#      matrix:
-#        build_type:
-#          - { type: "Release", name: "release" }
-#          - { type: "Debug", name: "debug" }
+outputs:
+  pr_links:
+    description: "Links to the artifacts for pull requests"
+    value: ${{ steps.pr_links.outputs.PR_LINKS }}
 
 env:
   TARGET: "arm"
   BREW_PYTHON_VERSION: "python@3"
   BREW_QT_VERSION: "qt"
-  # Artifact infos
   ARTIFACT_TITLE: "pulseview"
   ARTIFACT_BIN_NAME: "pulseview"
-  ARTIFACT_VERSION: "NIGHTLY"
-
-outputs:
-  pr_links: ${{ steps.pr_links.outputs.PR_LINKS }}
+  ARTIFACT_VERSION: ${{ inputs.artifact_version }}
 
 steps:
   - name: Set artifact version to PR
@@ -42,12 +33,7 @@ steps:
       libzip libusb libftdi hidapi nettle check doxygen swig \
       glib glibmm@2.66 cmake boost sdcc $BREW_PYTHON_VERSION $BREW_QT_VERSION
 
-#      - name: Provide qt also in prefix directory as qt is using a keg
-#        run: |
-#          brew link -f $BREW_QT_VERSION
-
   - name: Checkout sigrok-build
-    # Cannot use actions/checkout because it always checks out the calling actions' repo, not the one specified
     run: |
       git clone https://github.com/manobendro/sigrok-build.git
 
@@ -58,15 +44,12 @@ steps:
       ./sigrok-macos-build-dependencies.sh
 
   - name: Checkout sigrok's PulseView
-    # Check out default PV repository unless we're processing a pull request
     uses: actions/checkout@v4
     with:
-      # TODO: Clone from sigrok.org
       repository: sigrokproject/pulseview
       path: pulseview
 
   - name: Checkout PulseView from PR
-    # Check out PV branch of the pull request we're processing
     if: (github.event_name == 'pull_request')
     uses: actions/checkout@v4
     with:
@@ -104,7 +87,6 @@ steps:
 
   - name: Add artifact to pull request message
     id: pr_links
-    # Only relevant for pull requests
     if: (github.event_name == 'pull_request')
     run: |
       echo "PR_LINKS=[pulseview-${{ env.ARTIFACT_VERSION }}-${{ env.TARGET }}.dmg](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_OUTPUT

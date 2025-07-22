@@ -1,0 +1,25 @@
+name: Build PulseView for MacOS
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      build_pulseview_macos_arm:
+        description: 'Trigger PulseView macOS ARM Build'
+        required: false
+        type: boolean
+
+jobs:
+  build_pulseview_macos_arm:
+    name: PulseView macOS build for ARM
+    if: |
+      ((endsWith(github.repository, 'pulseview')) ||
+      (endsWith(github.repository, 'sigrok-build'))) &&
+      (github.event_name != 'workflow_dispatch' || github.event.inputs.build_pulseview_macos_arm == true)
+    runs-on: macos-15
+    outputs:
+      pr_links: ${{ jobs.build_pulseview_macos_arm_steps.outputs.pr_links }}
+    steps:
+      - name: PulseView macOS ARM Build Steps
+        id: build_pulseview_macos_arm_steps
+        uses: ./.github/workflows/build_pulseview_macos_arm.yml
