@@ -1,4 +1,4 @@
-name: Build sigrok artifacts for macOS
+name: Build pulseview for macOS
 
 on:
   push:
@@ -39,7 +39,7 @@ jobs:
       (endsWith(github.repository, 'sigrok-build')))
 
     # See https://github.com/actions/runner-images/issues/9254
-    runs-on: macos-14
+    runs-on: macos-15
 
 # Note: For now, we only supply debug builds
 #    strategy:
